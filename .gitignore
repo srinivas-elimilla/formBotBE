@@ -1,0 +1,56 @@
+# Node.js modules
+node_modules/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.swp
+*.swo
+*.bak
+
+# Debugger files
+*.pid
+*.seed
+
+# Coverage directory
+coverage/
+
+# Build artifacts
+dist/
+build/
+
+# Database dumps
+*.dump
+*.sql
+*.sqlite
+*.sqlite3
+
+# IDE-specific files
+.vscode/
+.idea/
+
+# Testing
+jest-test-results.json
+/.nyc_output
+/.cypress/
+.cypress-cache/
+.cypress-videos/
+cypress/screenshots/
+cypress/videos/
+
+# Other
+*.lock
+*.tgz
