@@ -23,8 +23,18 @@ const signup = async (req, res) => {
 
     // Generate token and send response
     const token = generateToken(newUser._id);
-    res.status(201).json({ message: "signup successful", token, newUser });
+    res.status(201).json({
+      message: "signup successful",
+      token,
+      user: {
+        id: newUser._id,
+        name: newUser.name,
+        email: newUser.email,
+        workspaces: newUser.workspaces,
+      },
+    });
   } catch (error) {
+    console.log("error >>>>>>>>>>>>>", error);
     res.status(500).json({ message: "server error", error: error.message });
   }
 };
@@ -48,8 +58,18 @@ const login = async (req, res) => {
 
     // Generate token and send response
     const token = generateToken(user._id);
-    res.status(200).json({ message: "login successful", token, user });
+    res.status(200).json({
+      message: "login successful",
+      token,
+      user: {
+        name: user.name,
+        email: user.email,
+        workspaces: user.workspaces,
+        id: user._id,
+      },
+    });
   } catch (error) {
+    console.log("error >>>>>>>>>>>>>", error);
     res.status(500).json({ message: "server error", error: error.message });
   }
 };

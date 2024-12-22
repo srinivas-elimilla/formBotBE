@@ -38,8 +38,7 @@ userSchema.methods.updatePassword = async function (oldPassword, newPassword) {
   const isMatch = await this.isPasswordMatch(oldPassword);
   if (!isMatch) throw new Error("old password is incorrect");
 
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(newPassword, salt);
+  this.password = newPassword;
 };
 
 module.exports = mongoose.model("User", userSchema);
