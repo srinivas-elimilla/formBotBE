@@ -3,13 +3,54 @@ const bcrypt = require("bcrypt");
 
 const userSchema = new mongoose.Schema(
   {
-    name: { type: String, required: true },
+    name: { type: String, required: true, unique: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    workspaces: [
+    workspace: {
+      folders: [
+        {
+          folderName: {
+            type: String,
+            required: true,
+            unique: true,
+          },
+          forms: [
+            {
+              formName: {
+                type: String,
+                required: true,
+                unique: true,
+              },
+              elements: [
+                {
+                  type: {
+                    type: String,
+                    enum: ["bubble", "input"],
+                    default: "bubble",
+                    required: true,
+                  },
+                  value: {
+                    type: String,
+                  },
+                  placeholder: {
+                    type: String,
+                  },
+                  inputType: {
+                    type: String,
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    invitees: [
       {
-        workspace: { type: mongoose.Schema.Types.ObjectId, ref: "Workspace" },
-        mode: { type: String, enum: ["edit", "view"], required: true },
+        id: {
+          type: mongoose.Schema.ObjectId,
+        },
+        mode: { type: String, enum: ["edit", "view"], default: "view" },
       },
     ],
   },

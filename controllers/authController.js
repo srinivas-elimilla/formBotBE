@@ -12,13 +12,19 @@ const signup = async (req, res) => {
     const { name, email, password } = req.body;
 
     // Check if the user already exists
+    const existingUserName = await User.findOne({ name });
+    if (existingUserName) {
+      return res.status(400).json({ message: "user name existed" });
+    }
+
+    // Check if the user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: "email existed" });
     }
 
     // Create a new user
-    const newUser = new User({ name, email, password });
+    const newUser = await new User({ name, email, password });
     await newUser.save();
 
     // Generate token and send response
@@ -30,7 +36,7 @@ const signup = async (req, res) => {
         id: newUser._id,
         name: newUser.name,
         email: newUser.email,
-        workspaces: newUser.workspaces,
+        workspace: newUser.workspace,
       },
     });
   } catch (error) {
@@ -76,8 +82,7 @@ const login = async (req, res) => {
 
 // Verify Token Controller
 const verifyToken = (req, res) => {
-  const user = User.findById({ _id: req.user.id });
-  res.status(200).json({ message: "token is valid", user });
+  res.status(200).json({ message: "token is valid", user: req.user });
 };
 
 module.exports = { signup, login, verifyToken };
