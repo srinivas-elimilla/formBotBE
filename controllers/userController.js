@@ -50,20 +50,32 @@ const updateUserProfile = async (req, res) => {
 
 // get all workspaces
 const getWorkspaces = async (req, res) => {
+  const { id } = req.params;
   try {
     // Find the user by ID
     const workspaces = await User.find({
       $or: [
+        { _id: id },
         {
-          "sharedWith.id": req.user.id,
+          "invitees.id": id,
         },
-        { _id: req.user.id },
       ],
     });
 
+    const allWorkspaces =
+      workspaces.length > 0 &&
+      workspaces.map((workspace) => {
+        return {
+          id: workspace._id,
+          name: workspace.name,
+          email: workspace.email,
+          folders: workspace.workspace.folders,
+        };
+      });
+
     return res.status(201).json({
       message: "all workspaces",
-      workspaces,
+      workspaces: allWorkspaces,
     });
   } catch (error) {
     console.error(error);
@@ -75,11 +87,11 @@ const getWorkspaces = async (req, res) => {
 
 // Create new folder
 const createFolder = async (req, res) => {
-  const { folderName } = req.body;
+  const { folderName, userId } = req.body;
 
   try {
     // Find the user by ID
-    const user = await User.findById(req.user.id);
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: "user not found" });
     }
@@ -101,7 +113,6 @@ const createFolder = async (req, res) => {
       folderName: folderName,
       forms: [],
     };
-    console.log("new folder", newFolder);
 
     user.workspace.folders.push(newFolder);
 
@@ -109,11 +120,11 @@ const createFolder = async (req, res) => {
 
     return res.status(201).json({
       message: "folder created",
-      user: {
+      workspaces: {
         id: user._id,
         name: user.name,
         email: user.email,
-        workspace: user.workspace,
+        folders: user.workspace.folders,
       },
     });
   } catch (error) {
@@ -126,19 +137,20 @@ const createFolder = async (req, res) => {
 
 // Delete Folder
 const deleteFolder = async (req, res) => {
-  const { id } = req.params;
-  const userId = req.user.id;
+  const { userId, id } = req.params;
 
   try {
     const result = await User.updateOne(
       { _id: userId },
       { $pull: { "workspace.folders": { _id: id } } }
     );
+    console.log("result >>>>>>>", result);
 
     if (result.modifiedCount === 0) {
-      return res
-        .status(404)
-        .json({ message: "Folder not found or already deleted", user: result });
+      return res.status(404).json({
+        message: "Folder not found or already deleted",
+        workspaces: result,
+      });
     }
 
     res.status(200).json({ message: "Folder deleted successfully" });
@@ -150,11 +162,11 @@ const deleteFolder = async (req, res) => {
 
 // Create new form
 const createForm = async (req, res) => {
-  const { formName, folderIndex } = req.body;
+  const { userId, formName, folderIndex } = req.body;
 
   try {
     // Find the user by ID
-    const user = await User.findById(req.user.id);
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: "user not found" });
     }
@@ -198,6 +210,37 @@ const createForm = async (req, res) => {
   }
 };
 
+// delete form
+const deleteForm = async (req, res) => {
+  const { userId, folderIndex, formId } = req.params;
+
+  try {
+    const user = await User.findById(userId);
+
+    if (!user || !user.workspace.folders[folderIndex]) {
+      return res.status(404).json({ message: "Folder not found" });
+    }
+
+    const folderId = user.workspace.folders[folderIndex]._id;
+
+    const result = await User.updateOne(
+      { _id: userId, "workspace.folders._id": folderId },
+      { $pull: { "workspace.folders.$.forms": { _id: formId } } }
+    );
+
+    if (result.modifiedCount === 0) {
+      return res
+        .status(404)
+        .json({ message: "Form not found or already deleted" });
+    }
+
+    res.status(200).json({ message: "Form deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting form:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 module.exports = {
   getUserProfile,
   updateUserProfile,
@@ -205,4 +248,5 @@ module.exports = {
   createFolder,
   deleteFolder,
   createForm,
+  deleteForm,
 };

@@ -6,6 +6,7 @@ const {
   createFolder,
   deleteFolder,
   createForm,
+  deleteForm,
 } = require("../controllers/userController");
 const { authCheck } = require("../middlewares/authMiddleware");
 
@@ -15,15 +16,22 @@ router.get("/profile", authCheck, getUserProfile);
 router.put("/update-profile", authCheck, updateUserProfile);
 
 // get workspaces
-router.get("/all-workspaces", authCheck, getWorkspaces);
+router.get("/:id/all-workspaces", authCheck, getWorkspaces);
 
 // create folder
 router.post("/new-folder", authCheck, createFolder);
 
 // delete folder
-router.delete("/delete-folder/:id", authCheck, deleteFolder);
+router.delete("/:userId/:id/delete-folder/", authCheck, deleteFolder);
 
 // create form
 router.post("/new-form", authCheck, createForm);
+
+// delete form
+router.delete(
+  "/:userId/:folderIndex/:formId/delete-form/",
+  authCheck,
+  deleteForm
+);
 
 module.exports = router;
