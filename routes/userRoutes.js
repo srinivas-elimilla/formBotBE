@@ -7,6 +7,8 @@ const {
   deleteFolder,
   createForm,
   deleteForm,
+  createFormBot,
+  fetchFormById,
 } = require("../controllers/userController");
 const { authCheck } = require("../middlewares/authMiddleware");
 
@@ -33,5 +35,11 @@ router.delete(
   authCheck,
   deleteForm
 );
+
+// create form-bot
+router.post("/form-bot", authCheck, createFormBot);
+
+// get form-bot by formId
+router.get("/form-bot/:userId/:folderIndex/:formId", fetchFormById);
 
 module.exports = router;

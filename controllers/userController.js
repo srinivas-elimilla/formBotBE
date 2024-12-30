@@ -241,6 +241,97 @@ const deleteForm = async (req, res) => {
   }
 };
 
+// create form-bot
+const createFormBot = async (req, res) => {
+  const { userId, formId, folderIndex, elements } = req.body;
+
+  try {
+    // Find the user by ID
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Validate folderIndex
+    if (
+      !user.workspace?.folders ||
+      folderIndex < 0 ||
+      folderIndex >= user.workspace.folders.length
+    ) {
+      return res.status(400).json({ message: "Invalid folder index" });
+    }
+
+    const folder = user.workspace.folders[folderIndex];
+
+    // Find the form by formId in the folder
+    const form = folder.forms.find((form) => form._id.toString() === formId);
+    if (!form) {
+      return res.status(404).json({ message: "Form not found" });
+    } else if (form.elements.length > 0) {
+      return res.status(404).json({ message: "Form is already saved" });
+    }
+
+    // Push elements into the form's elements array
+    if (!Array.isArray(elements)) {
+      return res.status(400).json({ message: "Elements must be sent" });
+    }
+
+    form.elements.push(...elements);
+
+    // Save the updated user document
+    await user.save();
+
+    return res.status(200).json({
+      message: "elements added to form",
+      form,
+    });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ message: "Server error", error: error.message });
+  }
+};
+
+// fetch form by formId
+const fetchFormById = async (req, res) => {
+  const { userId, folderIndex, formId } = req.params;
+
+  try {
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const folder = user.workspace.folders[folderIndex];
+
+    if (!folder) {
+      return res.status(404).json({ message: "Folder not found" });
+    }
+
+    const form = folder.forms.find((form) => form._id.toString() === formId);
+
+    if (!form) {
+      return res.status(404).json({ message: "Form not found" });
+    }
+
+    return res.status(200).json({
+      message: "Form fetched successfully",
+      form: {
+        formName: form.formName,
+        _id: form._id,
+        elements: form.elements,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ message: "Server error", error: error.message });
+  }
+};
+
 module.exports = {
   getUserProfile,
   updateUserProfile,
@@ -249,4 +340,6 @@ module.exports = {
   deleteFolder,
   createForm,
   deleteForm,
+  createFormBot,
+  fetchFormById,
 };
