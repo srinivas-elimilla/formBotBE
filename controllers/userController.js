@@ -85,6 +85,31 @@ const getWorkspaces = async (req, res) => {
   }
 };
 
+// share workspace
+const shareWorkspace = async (req, res) => {
+  const { userId, email, mode } = req.body;
+  try {
+    // Find the user id by email
+    const id = await User.find({ email });
+
+    const user = await User.find({ _id: userId });
+
+    user.invitees.push({ id, mode });
+
+    await user.save();
+
+    return res.status(201).json({
+      message: "workspace shared",
+      user,
+    });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ message: "Server error", error: error.message });
+  }
+};
+
 // Create new folder
 const createFolder = async (req, res) => {
   const { folderName, userId } = req.body;
@@ -342,4 +367,5 @@ module.exports = {
   deleteForm,
   createFormBot,
   fetchFormById,
+  shareWorkspace,
 };

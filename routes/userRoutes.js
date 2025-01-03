@@ -9,6 +9,7 @@ const {
   deleteForm,
   createFormBot,
   fetchFormById,
+  shareWorkspace,
 } = require("../controllers/userController");
 const { authCheck } = require("../middlewares/authMiddleware");
 
@@ -19,6 +20,9 @@ router.put("/update-profile", authCheck, updateUserProfile);
 
 // get workspaces
 router.get("/:id/all-workspaces", authCheck, getWorkspaces);
+
+// share workspace
+router.post("/share", authCheck, shareWorkspace);
 
 // create folder
 router.post("/new-folder", authCheck, createFolder);
